@@ -1,0 +1,70 @@
+/*
+  ReadAnalogVoltage
+  Reads an analog input on pin 0, converts it to voltage, and prints the result to the serial monitor.
+  Attach the center pin of a potentiometer to pin A0, and the outside pins to +5V and ground.
+ 
+ This example code is in the public domain.
+ */
+
+int sig = A0 ;
+
+int Dpin1= 2;
+int Dpin2= 3;
+int Dpin3= 4;
+int Dpin4= 5;
+float aValues[16];
+
+// the setup routine runs once when you press reset:
+void setup() {
+  // initialize serial communication at 9600 bits per second:
+  Serial.begin(115200);
+
+// the loop routine runs over and over again forever:
+
+pinMode(Dpin1, OUTPUT);
+pinMode(Dpin2, OUTPUT);
+pinMode(Dpin3, OUTPUT);
+pinMode(Dpin4, OUTPUT);
+
+}
+
+void loop() {
+  
+  digitalWrite(Dpin1,LOW);
+  digitalWrite(Dpin2,LOW);
+  digitalWrite(Dpin3,LOW);
+  digitalWrite(Dpin4,LOW);
+  int s1=analogRead(sig);
+  int i=0;
+  for (i=0; i<16; i++){
+    digitalWrite(Dpin1, bitRead(i, 0));
+    digitalWrite(Dpin2, bitRead(i, 1));
+    digitalWrite(Dpin3, bitRead(i, 2));
+    digitalWrite(Dpin4, bitRead(i, 3));
+    aValues[i]=analogRead(sig);
+    Serial.print(map(aValues[i],0,1023,0,500)/100.0,2);
+    Serial.print(", ");
+  }
+Serial.println();
+
+//  Serial.println();
+//  while (s1>0){
+//   Serial.print("*");
+//   s1-=20;
+//  }
+  
+  
+  
+  
+  
+  
+  
+  
+ /* // read the input on analog pin 0:
+  int sensorValue = analogRead(sig);
+  // Convert the analog reading (which goes from 0 - 1023) to a voltage (0 - 5V):
+  float voltage = sensorValue * (5.0 / 1023.0);
+  // print out the value you read:
+  Serial.println(voltage);
+  */
+  delay(50);
