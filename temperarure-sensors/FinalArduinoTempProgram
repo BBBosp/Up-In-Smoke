@@ -1,0 +1,207 @@
+/*
+ Read and convert multiplexed voltage from A0 to a temperature measurement using RTD's.
+Also only outputs the designated sensor when commanded.
+Includes a help option and tells you the command you entered is invalid while repeating the command to you
+ 
+ 
+uses hp4067 16 channel multiplexer
+ 
+*/
+
+
+int Dpin1= 2;            //assign pins to the desired value for 
+int Dpin2= 3;            //creating a 4 bit sequence to choose the 
+int Dpin3= 4;            //Muxd pin of our choice
+int Dpin4= 5;
+float aValues[16];       //Create an array to store sensor values 
+
+#define R2 5030           //Resistance of the resistor in series with RTD
+#define VCC 5.0           //VCC is voltage delivered to the circuit
+#define RZERO 1854        //Resistance of RTD at 0 Degrees Celsius
+#define RANDOM_CONSTANT_1 0.00384    //Constant 1 for determining temp
+#define RANDOM_CONSTANT_2 0.00000494 //Constant 2 for determining temp
+#define RANDOM_CONSTANT_3 0.00384494 //Constant 1+2
+
+
+// the setup routine runs once when you press reset:
+void setup() {
+  // initialize serial communication at 115200 characters per second:
+  Serial.begin(115200);
+
+// the loop routine runs over and over again forever:
+
+pinMode(Dpin1, OUTPUT);
+pinMode(Dpin2, OUTPUT);
+pinMode(Dpin3, OUTPUT);
+pinMode(Dpin4, OUTPUT);
+
+}
+
+
+void ReadMuxdTemp(){
+  analogReference(EXTERNAL);               //set analog reference to external which is 2.5V here
+  digitalWrite(Dpin1,LOW);                 //Write all Dpins low to start at 0000
+  digitalWrite(Dpin2,LOW);
+  digitalWrite(Dpin3,LOW);
+  digitalWrite(Dpin4,LOW);
+  
+  int i=0;                                 //set i to 0 so the loops acts right
+  for (i=0; i<16; i++){                    //set i<number of sensors and loop through all sensors
+    digitalWrite(Dpin1, bitRead(i, 0));    //write the pins to the appropriate value 
+    digitalWrite(Dpin2, bitRead(i, 1));
+    digitalWrite(Dpin3, bitRead(i, 2));
+    digitalWrite(Dpin4, bitRead(i, 3));
+   
+    int sensorValue = analogRead(A0);      //read input from current sensor
+//    Serial.print(sensorValue);
+    float VRTD = sensorValue * (2.5 / 1023.0); //convert sensorvalue to voltage reading
+  
+    float Rrtd = (-R2*VRTD)/(VRTD-VCC);       //self derived formula to determine resistance of RTD
+    //float Rrtd = VRTD/((VCC-VRTD)/R2);      //alternate formula to determine resistance of RTD
+    float TempC = (Rrtd-RZERO)/(RZERO*RANDOM_CONSTANT_3);  //derived formula to determine Temp in Celsius based on Rrtd
+    float TempF= TempC*1.8+32 ;              //Convert Temp in Celsius to farenheit
+    
+    
+//    Serial.print("\t");
+//    Serial.println(TempF);
+    aValues[i]=TempF;         //write TempF to corect location in the array
+
+
+  }
+}
+
+
+
+void loop()  {
+  
+  byte command;              //declare a variable to hold our command
+  if(Serial.available()){    //check and see if a message has been sent
+    command=Serial.read();   //if so, read the message into our variable
+    switch(command){        //run different commands based on the value of the message, send a message for undefined commands
+        // Read and print the indicated temperature channel
+        case '0' :
+          readAndPrintTemperature(command);
+          break;          
+        // Read and print the indicated temperature channel
+        case '1' :
+          readAndPrintTemperature(command);
+          break;
+        // Read and print the indicated temperature channel
+        case '2' :
+          readAndPrintTemperature(command);
+          break;
+        // Read and print the indicated temperature channel
+        case '3' :
+          readAndPrintTemperature(command);
+          break;
+        // Read and print the indicated temperature channel
+        case '4' :
+          readAndPrintTemperature(command);
+          break;
+        // Read and print the indicated temperature channel
+        case '5' :
+          readAndPrintTemperature(command);
+          break;
+        case '6' :
+          readAndPrintTemperature(command);
+          break;          
+        // Read and print the indicated temperature channel
+        case '7' :
+          readAndPrintTemperature(command);
+          break;
+        // Read and print the indicated temperature channel
+        case '8' :
+          readAndPrintTemperature(command);
+          break;
+        // Read and print the indicated temperature channel
+        case '9' :
+          readAndPrintTemperature(command);
+          break;
+        // Read and print the indicated temperature channel
+        case 'a' :
+          readAndPrintTemperature(command);
+          break;
+        // Read and print the indicated temperature channel
+        case 'b' :
+          readAndPrintTemperature(command);
+          break;
+        // Read and print the indicated temperature channel
+        case 'c' :
+          readAndPrintTemperature(command);
+          break;
+        // Read and print the indicated temperature channel
+        case 'd' :
+          readAndPrintTemperature(command);
+          break;
+        // Read and print the indicated temperature channel
+        case 'e' :
+          readAndPrintTemperature(command);
+          break;
+        // Read and print the indicated temperature channel
+        case 'f' :
+          readAndPrintTemperature(command);
+          break;
+        case 'u' :
+          ReadMuxdTemp();
+          
+          for (int i=0; i<16; i++){
+            if (aValues[i]<-400){
+            Serial.print("Check Sensor");
+            Serial.print(",");                    
+          }
+          else{
+            Serial.print(aValues[i]);
+            Serial.print(",");
+          } 
+          //Serial.println();
+          }Serial.println();
+          break;
+
+        case 'h' :
+          Serial.println("This is the help menu!");
+          Serial.println("This program will tell you the ");
+          Serial.println("the value in farenheit that a ");
+          Serial.println("sensor is reading. ");
+          Serial.println("To choose a senseor please enter");
+          Serial.println("a value from 0 to f based on ");
+          Serial.println("that sensors number in HEX.");
+          Serial.println("All letter values should be entered");
+          Serial.println("in lower case.");
+          Serial.println();
+          delay (3000);
+          Serial.println("GIGGITY!");
+        
+        break;
+        
+        
+        default:
+          Serial.print(command);
+          Serial.println(" is not a command. please enter a valid command or enter h for help");
+          
+        break;
+      }
+  }
+
+}
+
+void readAndPrintTemperature(byte cmd){  
+        ReadMuxdTemp();        
+        // Dirty hax follow
+        cmd-=48;    // Make '0' into an actual zero, see ASCII table for clues
+        if(cmd>9){  // More and dirtier hax.
+         cmd-=39;   // Turns 'a','b','c','d','e','f' into their hex equivalents, to hell with the other numbers.
+        }           // Back to the scheduled program
+        if (aValues[cmd] < -400){  // check for a reading and return message if there is not
+          Serial.print(cmd);
+          Serial.println(" Check connection ");
+        }
+        else {                //else print the vaulue with some words
+          Serial.print(cmd);
+          Serial.print("Sensor "); 
+          Serial.print(char(cmd));
+          Serial.print(" is :");   
+          Serial.print(aValues[cmd]);
+          Serial.println(" Degrees Farenheit");
+        }
+}
+        
